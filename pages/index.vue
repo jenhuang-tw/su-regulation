@@ -5,7 +5,7 @@
         <ul>
             <li v-for="([id, title]) in lawList" :key="id">
             {{ id.toString().padStart(4, '0') }}.
-            <a :href="`embed/${id}`">{{ title }}</a>
+            <NuxtLink :to="`/regulation/${id}/embed`">{{ title }}</NuxtLink>
             </li>
         </ul>
     </div>
