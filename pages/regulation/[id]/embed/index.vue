@@ -44,8 +44,6 @@ onMounted(async () => {
 })
 
 useHead({
-  title: regulation.titleShort + ' | 臺北大學學生會 法規系統',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  charset: 'utf-8'
+  title: regulation.titleShort + ' | 臺北大學學生會 法規系統'
 })
 </script>

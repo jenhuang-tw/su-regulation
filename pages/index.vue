@@ -13,12 +13,6 @@
 
 <script setup lang="js">
 
-useHead({
-  title: '國立臺北大學學生自治會 法規系統 v2.1',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  charset: 'utf-8'
-});
-
 const lawList = [
   [7,'學生自治訴訟法'],
   [58,'組織章程'],
