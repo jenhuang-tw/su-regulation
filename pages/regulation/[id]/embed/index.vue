@@ -1,17 +1,16 @@
 <template>
-    <div>
-        
-        <p><span style="font-weight: bold;">法規名稱：</span>{{ regulation.titleFull }} <span v-if="regulation.status === 'abandoned'" style="color: red;">(廢止)</span></p>
-        <p><span style="font-weight: bold;">{{ regulation.modifiedType }}日期：</span>{{ regulation.modifiedDate }}</p>
-        <h2 class="wp-block-heading">全文</h2>
-        <div v-if="regulation.fullText" v-html="regulation.fullText"></div>
-        <h2 class="wp-block-heading">沿革</h2>
-          <ol>
-            <li v-for="(item, index) in regulation.history" :key="index">
-              {{ item }}
-            </li>
-          </ol>
-    </div>
+    <div><pre>
+&ltp>&ltspan style="font-weight: bold;">法規名稱：&lt/span>{{ regulation.titleFull }} <span v-if="regulation.status === 'abandoned'">&ltspan style="color: red;">(廢止)&lt/span></span>&lt/p>
+&ltp>&ltspan style="font-weight: bold;">{{ regulation.modifiedType }}日期：&lt/span>{{ regulation.modifiedDate }}&lt/p>
+&lth2 class="wp-block-heading">全文&lt/h2>
+        <div v-if="regulation.fullText">{{ regulation.fullText }}</div>
+&lth2 class="wp-block-heading">沿革&lt/h2>
+&ltol>
+            <div v-for="(item, index) in regulation.history" :key="index">
+              &ltli>{{ item }}&lt/li>
+            </div>
+&lt/ol>
+    </pre></div>
 </template>
 
 <script setup>
