@@ -104,10 +104,23 @@ function formatToHtml(lawContent) {
 export default defineEventHandler(async (event) => {
   const { id } = event.context.params
   const paddedId = id.toString().padStart(4, '0')
-  const filePath = path.resolve('public/regulations', `${paddedId}.txt`)
 
   try {
-    const raw = await readFile(filePath, 'utf-8')
+
+    let raw
+
+    if (process.env.NODE_ENV === 'development') {
+      // 本地開發環境：直接讀取檔案系統
+      const filePath = path.resolve('public/regulations', `${paddedId}.txt`)
+      raw = await readFile(filePath, 'utf-8')
+    } else {
+      // 部署後環境：用 fetch 從公開網址讀取
+      const fileUrl = `https://regsys.ntpusu.org/regulations/${paddedId}.txt`
+      const res = await fetch(fileUrl)
+      if (!res.ok) throw new Error(`API 嘗試 fetch 公開的法規檔案，但發生 ${res.status} 狀況。`)
+      raw = await res.text()
+    }
+
     const parsed = matter(raw)
 
     return {
