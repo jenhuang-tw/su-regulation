@@ -3,9 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
   css: ['@/assets/css/regulation-format.css'],
-  routeRules: {
-    '/regulation/*': { prerender: true }
-  },
+
   nitro: {
     preset: 'Vercel'
   }
