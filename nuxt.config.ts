@@ -5,5 +5,8 @@ export default defineNuxtConfig({
   css: ['@/assets/css/regulation-format.css'],
   routeRules: {
     '/regulation/*': { prerender: true }
+  },
+  nitro: {
+    preset: 'Vercel'
   }
 })
