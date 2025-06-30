@@ -1,0 +1,126 @@
+name: Update Law List
+
+# 觸發條件：當 public/regulations 目錄下的檔案有變動時
+on:
+  push:
+    paths:
+      - 'public/regulations/**'
+    branches:
+      - main
+      - master
+  pull_request:
+    paths:
+      - 'public/regulations/**'
+    types:
+      - closed
+    branches:
+      - main
+      - master
+
+jobs:
+  update-lawlist:
+    # 只有在 PR 被合併或是直接推送到主分支時才執行
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 檢出程式碼
+      uses: actions/checkout@v4
+      with:
+        # 需要完整的 git 歷史記錄來檢測變更
+        fetch-depth: 0
+        # 使用 GitHub Token 來允許推送變更
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: 設定 Node.js 環境
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: 安裝相依套件
+      run: |
+        npm ci
+    
+    - name: 檢查 public/regulations 目錄變更
+      id: check-changes
+      run: |
+        # 檢查 public/regulations 目錄下是否有 .txt 檔案變更
+        if [ "${{ github.event_name }}" == "push" ]; then
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^public/regulations/.*\.txt$' || true)
+        else
+          # PR 合併的情況
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^public/regulations/.*\.txt$' || true)
+        fi
+        
+        if [ -n "$CHANGED_FILES" ]; then
+          echo "has-changes=true" >> $GITHUB_OUTPUT
+          echo "變更的檔案:"
+          echo "$CHANGED_FILES"
+        else
+          echo "has-changes=false" >> $GITHUB_OUTPUT
+          echo "沒有檢測到 .txt 檔案變更"
+        fi
+    
+    - name: 執行法規列表更新
+      if: steps.check-changes.outputs.has-changes == 'true'
+      run: |
+        node update-regulation-list.js
+    
+    - name: 檢查是否有變更需要提交
+      if: steps.check-changes.outputs.has-changes == 'true'
+      id: check-git-changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Actions"
+        
+        # 檢查是否有檔案變更
+        if git diff --quiet pages/index.vue; then
+          echo "git-changes=false" >> $GITHUB_OUTPUT
+          echo "pages/index.vue 沒有變更"
+        else
+          echo "git-changes=true" >> $GITHUB_OUTPUT
+          echo "pages/index.vue 有變更"
+        fi
+    
+    - name: 提交變更
+      if: steps.check-changes.outputs.has-changes == 'true' && steps.check-git-changes.outputs.git-changes == 'true'
+      run: |
+        git add pages/index.vue
+        git commit -m "chore: 自動更新法規列表 (lawList)
+        
+        - 檢測到 public/regulations 目錄下的 .txt 檔案有變更
+        - 自動更新 pages/index.vue 中的 lawList 陣列
+        - 由 GitHub Actions 自動執行"
+        
+        git push
+    
+    - name: 更新結果摘要
+      if: steps.check-changes.outputs.has-changes == 'true'
+      run: |
+        echo "## 📋 法規列表更新結果" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.check-git-changes.outputs.git-changes }}" == "true" ]; then
+          echo "✅ **成功更新法規列表**" >> $GITHUB_STEP_SUMMARY
+          echo "- 偵測到 public/regulations 目錄下的 .txt 檔案變更" >> $GITHUB_STEP_SUMMARY
+          echo "- 已自動更新 pages/index.vue 中的 lawList 陣列" >> $GITHUB_STEP_SUMMARY
+          echo "- 變更已提交至版本控制" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "ℹ️ **無需更新**" >> $GITHUB_STEP_SUMMARY
+          echo "- 雖然檢測到 .txt 檔案變更，但 lawList 內容無需更新" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 當前法規列表:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        node -e "
+          import('./update-regulation-list.js').then(module => {
+            const lawList = module.scanRegulations();
+            console.log('const lawList = [');
+            lawList.forEach(law => console.log(\`  [\${law[0]},'\${law[1]}'],\`));
+            console.log('];');
+          });
+        " >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
