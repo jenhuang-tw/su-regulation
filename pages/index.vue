@@ -8,6 +8,7 @@
             <NuxtLink :to="`/regulation/${id}/embed`">{{ title }}</NuxtLink>
             </li>
         </ul>
+        <NuxtImg src="/union-seal-from_fb_20110914.jpg" sizes="sm:90vw md:50vw lg:300px" />
     </div>
 </template>
 
