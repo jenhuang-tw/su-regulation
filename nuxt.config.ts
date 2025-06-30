@@ -18,6 +18,11 @@ export default defineNuxtConfig({
       ],
       noscript: [
         { textContent: 'JavaScript is required' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/ntpusu-favicon.ico' },
+        { rel: 'apple-touch-icon', type: 'image/png', sizes: '180x180', href: '/ntpusu-apple-touch-icon.png' },
+        { rel: 'manifest', href: '/ntpusu-site.webmanifest' }
       ]
     }
   },
