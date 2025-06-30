@@ -20,6 +20,8 @@ export default defineNuxtConfig({
         { textContent: 'JavaScript is required' }
       ]
     }
-  }
+  },
+
+  modules: ['@nuxt/image']
 
 })
