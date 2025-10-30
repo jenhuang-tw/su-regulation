@@ -27,6 +27,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'minimal'
+})
 // --- Script 區塊與前一版相同，無需變更 ---
 
 import matter from 'gray-matter'

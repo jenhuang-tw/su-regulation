@@ -17,6 +17,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: 'minimal'
+})
 
 import matter from 'gray-matter'
 
