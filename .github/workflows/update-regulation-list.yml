@@ -25,8 +25,8 @@ on:
 
 jobs:
   update-lawlist:
-    # 只有在 PR 被合併或是直接推送到主分支時才執行
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    # 只有在 PR 被合併、直接推送到主分支，或是手動觸發時才執行
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || github.event_name == 'workflow_dispatch'
     
     runs-on: ubuntu-latest
     
@@ -49,24 +49,30 @@ jobs:
       run: |
         npm ci
     
-    - name: 檢查 public/regulations 目錄變更
+    - name: 檢查 public/regulations 目錄變更或是否為手動觸發
       id: check-changes
       run: |
-        # 檢查 public/regulations 目錄下是否有 .txt 檔案變更
-        if [ "${{ github.event_name }}" == "push" ]; then
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^public/regulations/.*\.txt$' || true)
-        else
-          # PR 合併的情況
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^public/regulations/.*\.txt$' || true)
-        fi
-        
-        if [ -n "$CHANGED_FILES" ]; then
+        # 如果是手動觸發，則強制設定 has-changes=true
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
           echo "has-changes=true" >> $GITHUB_OUTPUT
-          echo "變更的檔案:"
-          echo "$CHANGED_FILES"
+          echo "手動觸發：強制執行法規列表更新"
         else
-          echo "has-changes=false" >> $GITHUB_OUTPUT
-          echo "沒有檢測到 .txt 檔案變更"
+          # 檢查 public/regulations 目錄下是否有 .txt 檔案變更
+          if [ "${{ github.event_name }}" == "push" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep '^public/regulations/.*\.txt$' || true)
+          else
+            # PR 合併的情況
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep '^public/regulations/.*\.txt$' || true)
+          fi
+          
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "變更的檔案:"
+            echo "$CHANGED_FILES"
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "沒有檢測到 .txt 檔案變更"
+          fi
         fi
     
     - name: 執行法規列表更新
@@ -96,7 +102,7 @@ jobs:
         git add pages/regulation/index.vue
         git commit -m "chore: 自動更新法規列表
         
-        - 檢測到 public/regulations 目錄下的 .txt 檔案有變更
+        - 檢測到 public/regulations 目錄下的 .txt 檔案有變更或為手動觸發
         - 自動更新 pages/regulation/index.vue 中的 lawList 陣列
         - 由 GitHub Actions 自動執行"
         
@@ -110,12 +116,20 @@ jobs:
         
         if [ "${{ steps.check-git-changes.outputs.git-changes }}" == "true" ]; then
           echo "✅ **成功更新法規列表**" >> $GITHUB_STEP_SUMMARY
-          echo "- 偵測到 public/regulations 目錄下的 .txt 檔案變更" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "- 經由**手動觸發**執行更新" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- 偵測到 public/regulations 目錄下的 .txt 檔案變更" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- 已自動更新 pages/regulation/index.vue 中的 lawList 陣列" >> $GITHUB_STEP_SUMMARY
           echo "- 變更已提交至版本控制" >> $GITHUB_STEP_SUMMARY
         else
           echo "ℹ️ **無需更新**" >> $GITHUB_STEP_SUMMARY
-          echo "- 雖然檢測到 .txt 檔案變更，但 lawList 內容無需更新" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "- 經由**手動觸發**執行，但 lawList 內容無需更新" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- 雖然檢測到 .txt 檔案變更，但 lawList 內容無需更新" >> $GITHUB_STEP_SUMMARY
+          fi
         fi
         
         echo "" >> $GITHUB_STEP_SUMMARY
