@@ -1,6 +1,6 @@
 name: Update Law List
 
-# 觸發條件：當 public/regulations 目錄下的檔案有變動時
+# 觸發條件：當 public/regulations 目錄下的檔案有變動時，或手動觸發
 on:
   push:
     paths:
@@ -16,6 +16,12 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '啟動事由（可選）'
+        required: false
+        default: '手動更新法規列表'
 
 jobs:
   update-lawlist:
