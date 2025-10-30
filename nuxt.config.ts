@@ -1,7 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
-  devtools: { enabled: true },
+  devtools: { 
+    enabled: process.env.NODE_ENV === 'development'
+   },
   css: ['@/assets/css/regulation-format.css'],
 
   nitro: {
@@ -27,6 +29,17 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ['@nuxt/image']
+  modules: ['
+    @nuxt/image',
+    '@nuxtjs/tailwindcss', 
+    '@nuxtjs/color-mode',  // <-- 新增
+    'nuxt-icon'            // <-- 新增
+  ],
+
+  colorMode: {
+    classSuffix: '', // 讓 Tailwind 的 dark: class 直接生效
+    preference: 'system', // 'system' - 自動偵測OS偏好
+    fallback: 'light', // 當偵測不到時的預設值
+  }
 
 })
