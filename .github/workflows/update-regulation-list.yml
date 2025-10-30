@@ -76,22 +76,22 @@ jobs:
         git config --local user.name "GitHub Actions"
         
         # 檢查是否有檔案變更
-        if git diff --quiet pages/index.vue; then
+        if git diff --quiet pages/regulation/index.vue; then
           echo "git-changes=false" >> $GITHUB_OUTPUT
-          echo "pages/index.vue 沒有變更"
+          echo "pages/regulation/index.vue 沒有變更"
         else
           echo "git-changes=true" >> $GITHUB_OUTPUT
-          echo "pages/index.vue 有變更"
+          echo "pages/regulation/index.vue 有變更"
         fi
     
     - name: 提交變更
       if: steps.check-changes.outputs.has-changes == 'true' && steps.check-git-changes.outputs.git-changes == 'true'
       run: |
-        git add pages/index.vue
-        git commit -m "chore: 自動更新法規列表 (lawList)
+        git add pages/regulation/index.vue
+        git commit -m "chore: 自動更新法規列表
         
         - 檢測到 public/regulations 目錄下的 .txt 檔案有變更
-        - 自動更新 pages/index.vue 中的 lawList 陣列
+        - 自動更新 pages/regulation/index.vue 中的 lawList 陣列
         - 由 GitHub Actions 自動執行"
         
         git push
@@ -105,7 +105,7 @@ jobs:
         if [ "${{ steps.check-git-changes.outputs.git-changes }}" == "true" ]; then
           echo "✅ **成功更新法規列表**" >> $GITHUB_STEP_SUMMARY
           echo "- 偵測到 public/regulations 目錄下的 .txt 檔案變更" >> $GITHUB_STEP_SUMMARY
-          echo "- 已自動更新 pages/index.vue 中的 lawList 陣列" >> $GITHUB_STEP_SUMMARY
+          echo "- 已自動更新 pages/regulation/index.vue 中的 lawList 陣列" >> $GITHUB_STEP_SUMMARY
           echo "- 變更已提交至版本控制" >> $GITHUB_STEP_SUMMARY
         else
           echo "ℹ️ **無需更新**" >> $GITHUB_STEP_SUMMARY
