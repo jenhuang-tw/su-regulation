@@ -29,8 +29,8 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ['
-    @nuxt/image',
+  modules: [
+    '@nuxt/image',
     '@nuxtjs/tailwindcss', 
     '@nuxtjs/color-mode',  // <-- 新增
     'nuxt-icon'            // <-- 新增
