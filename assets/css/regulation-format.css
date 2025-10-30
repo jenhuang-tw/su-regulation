@@ -41,8 +41,8 @@ p.xiang:not(:only-of-type)::before {
 	content: counter(num, upper-roman);
 	display: inline-block;
 	position: absolute;
-	left: -2em;
-	margin-left: -1em;
+	left: 0em; /* -2 */
+	margin-left: 0em; /* -1 */
 	text-align: right;
 	width: 2em;
 	font-family: 'Times New Roman', serif;
