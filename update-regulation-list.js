@@ -88,15 +88,16 @@ function updateIndexVue(newLawList) {
     ).join('\n')}\n];`;
     
     // 使用正規表達式找到並替換 lawList 定義
-    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\];?/;
+    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\n\s*\];/;
     
     if (lawListRegex.test(content)) {
+      console.log('找到了 lawList 定義，準備更新');
       content = content.replace(lawListRegex, newLawListStr);
       fs.writeFileSync(indexPath, content, 'utf8');
       console.log('✅ 成功更新 pages/regulation/index.vue 中的 lawList');
       return true;
     } else {
-      console.error('❌ 在 pages/regulation/index.vue 中找不到 lawList 定義');
+      console.error('❌ 在 pages/regulation/index.vue 中找不到 lawList 定義，或無法更新');
       return false;
     }
   } catch (error) {
