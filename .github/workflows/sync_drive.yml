@@ -16,6 +16,9 @@ jobs:
       - name: 1. Checkout Repository
         # 取得 repo 目前的程式碼
         uses: actions/checkout@v4
+        with:
+          # 設定 fetch depth 為0以便在稍後 git pull
+          fetch-depth: 0
 
       - name: 2. Setup Python
         uses: actions/setup-python@v5
@@ -25,31 +28,45 @@ jobs:
       - name: 3. Install gdown
         run: pip install gdown
 
-      - name: 4. Clean local regulations directory
-        # 為了確保刪除的檔案也能同步，先刪除舊的資料夾再重建
+      - name: 4. Download, Clean, and Flatten Files
         run: |
+          echo "Creating temporary download directory..."
+          mkdir temp_drive_download
+          
+          echo "Downloading from Google Drive (法規上傳區共用資料夾)..."
+          gdown --folder 12pfhU4BD47k58wGX4Tn1iz1whfIlt7D4 -O ./temp_drive_download/
+          
+          echo "Cleaning old regulations directory..."
           rm -rf ./public/regulations
           mkdir -p ./public/regulations
+          
+          echo "Moving and flattening all .txt files..."
+          # 在 temp_drive_download 中找出所有 .txt 檔案，將它們全部移動到此 repo 的 public/regulations 資料夾中
+          find ./temp_drive_download -name "*.txt" -exec mv {} ./public/regulations/ \;
+          
+          echo "Cleaning up temporary directory..."
+          rm -rf temp_drive_download
 
-      - name: 5. Download files from Google Drive
-        # 公開資料夾，無須憑證
-        run: |
-          # 遞迴下載資料夾之檔案
-          gdown --folder 12pfhU4BD47k58wGX4Tn1iz1whfIlt7D4 -O ./public/regulations/
-
-      - name: 6. Commit and Push changes
+      - name: 5. Commit and Push changes
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "github-actions-bot@users.noreply.github.com"
           
-          # 檢查是否有檔案變動 (git status --porcelain 會在有變動時輸出文字)
+          # 關閉 CRLF 自動轉換，避免不必要的 warning
+          git config --global core.autocrlf false
+          
+          # 檢查是否有檔案變動
           if [ -n "$(git status --porcelain)" ]; then
             echo "Changes detected, committing to repository."
-            
             # 只 commit 法規資料夾的變動
             git add ./public/regulations/
+            git commit -m "chore(law): Sync text files from Google Drive"
             
-            git commit -m "chore(law): Sync regulation files from Google Drive"
+            echo "Pulling remote changes before push..."
+            # 使用 git pull --rebase 來同步遠端變更，解決 [rejected] 錯誤
+            git pull --rebase
+            
+            echo "Pushing changes to remote..."
             git push
           else
             echo "No changes detected from Google Drive."
