@@ -68,14 +68,14 @@ function scanRegulations() {
 }
 
 /**
- * 更新 pages/index.vue 中的 lawList 陣列
+ * 更新 pages/regulation/index.vue 中的 lawList 陣列
  * @param {Array} newLawList - 新的法規陣列
  */
 function updateIndexVue(newLawList) {
   const indexPath = path.join(process.cwd(), 'pages', 'index.vue');
   
   if (!fs.existsSync(indexPath)) {
-    console.error('pages/index.vue 檔案不存在');
+    console.error('pages/regulation/index.vue 檔案不存在');
     return false;
   }
   
@@ -93,14 +93,14 @@ function updateIndexVue(newLawList) {
     if (lawListRegex.test(content)) {
       content = content.replace(lawListRegex, newLawListStr);
       fs.writeFileSync(indexPath, content, 'utf8');
-      console.log('✅ 成功更新 pages/index.vue 中的 lawList');
+      console.log('✅ 成功更新 pages/regulation/index.vue 中的 lawList');
       return true;
     } else {
-      console.error('❌ 在 pages/index.vue 中找不到 lawList 定義');
+      console.error('❌ 在 pages/regulation/index.vue 中找不到 lawList 定義');
       return false;
     }
   } catch (error) {
-    console.error('更新 pages/index.vue 時發生錯誤:', error.message);
+    console.error('更新 pages/regulation/index.vue 時發生錯誤:', error.message);
     return false;
   }
 }
