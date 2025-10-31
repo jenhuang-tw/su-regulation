@@ -1,4 +1,4 @@
-name: Sync Regulations from Google Drive
+name: 從 Google Drive 同步法規檔案
 
 on:
   # 允許在 GitHub 上手動觸發
@@ -25,30 +25,19 @@ jobs:
       - name: 3. Install gdown
         run: pip install gdown
 
-      - name: 4. Authenticate Google Drive
-        run: echo "${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}" > gdrive-credentials.json
-        env:
-          GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-
-      - name: 5. Set Google Credentials Environment Variable
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=gdrive-credentials.json" >> $GITHUB_ENV
-
-      - name: 6. Clean local regulations directory
+      - name: 4. Clean local regulations directory
         # 為了確保刪除的檔案也能同步，先刪除舊的資料夾再重建
         run: |
           rm -rf ./public/regulations
           mkdir -p ./public/regulations
 
-      - name: 7. Download files from Google Drive
-        # *** 已修正路徑 ***
+      - name: 5. Download files from Google Drive
+        # 公開資料夾，無須憑證
         run: |
-          # *** FOLDER_ID (Google Drive 資料夾 ID) ***
+          # 遞迴下載資料夾之檔案
           gdown --folder 12pfhU4BD47k58wGX4Tn1iz1whfIlt7D4 -O ./public/regulations/
-          
-          # 清理暫時的憑證檔案
-          rm gdrive-credentials.json
 
-      - name: 8. Commit and Push changes
+      - name: 6. Commit and Push changes
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "github-actions-bot@users.noreply.github.com"
