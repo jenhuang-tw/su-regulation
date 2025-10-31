@@ -88,7 +88,7 @@ function updateIndexVue(newLawList) {
     ).join('\n')}\n];`;
     
     // 使用正規表達式找到並替換 lawList 定義
-    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\];/;
+    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\];?/;
     
     if (lawListRegex.test(content)) {
       content = content.replace(lawListRegex, newLawListStr);
