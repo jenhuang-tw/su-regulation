@@ -72,7 +72,7 @@ function scanRegulations() {
  * @param {Array} newLawList - 新的法規陣列
  */
 function updateIndexVue(newLawList) {
-  const indexPath = path.join(process.cwd(), 'pages', 'index.vue');
+  const indexPath = path.join(process.cwd(), 'pages', 'regulation', 'index.vue');
   
   if (!fs.existsSync(indexPath)) {
     console.error('pages/regulation/index.vue 檔案不存在');
@@ -88,7 +88,7 @@ function updateIndexVue(newLawList) {
     ).join('\n')}\n];`;
     
     // 使用正規表達式找到並替換 lawList 定義
-    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\n\s*\];/;
+    const lawListRegex = /const\s+lawList\s*=\s*\[[\s\S]*?\];/;
     
     if (lawListRegex.test(content)) {
       console.log('找到了 lawList 定義，準備更新');
@@ -137,9 +137,9 @@ function main() {
 }
 
 // 如果直接執行此檔案，則執行主要函數
-if (import.meta.url === `file://${process.argv[1]}`) {
+// if (import.meta.url === `file://${process.argv[1]}`) {
   main();
-}
+// }
 
 export {
   parseFrontMatter,
