@@ -5,7 +5,7 @@ modifiedType: 訂定
 modifiedDate: 2025-11-05
 status: active
 history: 
-  - 114年11月5日三峽校區學生議會第25屆第5次常會通過，11月5日議長公告（北大峽議授秘字第1141105003號），訂定全文共8條。
+  - 114年11月5日三峽校區學生議會第26屆第3次臨時會通過，11月5日議長公告（<a href="https://drive.google.com/file/d/146Horp8qmua1-Pm5hH1xdcFYpWHNq752/view?usp=sharing" target="_blank">北大峽議授秘字第1141105003號</a>），訂定全文共8條。
   
 ---
 第一條
