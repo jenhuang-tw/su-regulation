@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-x-hidden">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
     
     <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-10">
-      <nav class="container mx-auto">
+      <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           
           <div>
@@ -21,7 +21,7 @@
                 dark:bg-gray-700
                 dark:hover:bg-gray-600 
                 transition-colors"
-              aria-label="切換亮暗色模式"
+              aria-label="切換亮色或暗色背景"
             >
               <template v-if="colorMode.value === 'dark'">
                 <Icon name="heroicons:sun-20-solid" class="w-6 h-6" />
@@ -36,8 +36,10 @@
       </nav>
     </header>
 
-    <main class="container mx-auto py-8">
-      <slot />
+    <main class="py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <slot />
+      </div>
     </main>
 
   </div>
