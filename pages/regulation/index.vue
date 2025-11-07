@@ -8,7 +8,7 @@
     </p>
 
     <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-      國立臺北大學學生自治會 法規系統 v2.1
+      國立臺北大學學生自治會 法規系統 v2.2
     </h1>
     <p class="text-base text-gray-700 dark:text-gray-300 mb-8">
       請優先至本會網站查詢。任何疑問請洽總會秘書處。
@@ -25,8 +25,11 @@
             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
               會網法規頁面
             </th>
-            <th scope="col" colspan="3" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-              開發者工具
+            <th scope="col" colspan="2" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              法制作業
+            </th>
+            <th scope="col" colspan="2" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              會網 IT 功能
             </th>
           </tr>
         </thead>
@@ -47,6 +50,12 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <NuxtLink :to="`/regulation/${id}/print`" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">
                 列印
+              </NuxtLink>
+            </td>
+            
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <NuxtLink :to="`/regulation/${id}/amend`" target="_blank" class="text-yellow-600 dark:text-yellow-400 hover:underline">
+                空白對照表
               </NuxtLink>
             </td>
 
