@@ -4,7 +4,7 @@
       
       <NuxtImg 
         src="/union-seal-from_fb_20110914.jpg" 
-        class="w-24 h-24 mx-auto mb-6 rounded-full shadow-md" 
+        class="w-24 h-24 mx-auto mb-6 rounded-full shadow-md object-cover" 
         alt="NTPU 學生會 會徽"
       />
 
@@ -12,12 +12,14 @@
         臺北大學學生自治會<br>法規系統 v2.2
       </h1>
 
-      <NuxtLink 
-        to="/regulation" 
-        class="no-underline block w-full text-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300 mb-6"
-      >
-        進入法規系統
-      </NuxtLink>
+      <div class="text-center mb-6">
+        <NuxtLink 
+          to="/regulation" 
+          class="no-underline inline-block text-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300"
+        >
+          進入法規系統
+        </NuxtLink>
+      </div>
 
       <div class="text-center text-sm text-gray-600 dark:text-gray-400 space-y-3">
         <p>

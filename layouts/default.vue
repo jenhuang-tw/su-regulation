@@ -1,20 +1,26 @@
 <template>
   <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
     
-    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-10">
+<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-10">
       <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           
-          <div class="flex-shrink-0">
+          <div>
             <NuxtLink to="/" class="text-xl font-bold text-gray-800 dark:text-gray-100 no-underline">
-              NTPUSU法規系統
+              NTPUSU 法規系統
             </NuxtLink>
           </div>
           
-          <div>
+          <div class="flex-shrink-0">
             <button 
               @click="toggleMode" 
-              class="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              class="p-2 rounded-full 
+                text-gray-600  
+                hover:bg-gray-200 
+                dark:text-gray-300
+                dark:bg-gray-700
+                dark:hover:bg-gray-600 
+                transition-colors"
               aria-label="切換亮暗色模式"
             >
               <template v-if="colorMode.value === 'dark'">
