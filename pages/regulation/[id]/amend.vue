@@ -10,12 +10,27 @@
     </div>
 
     <div v-else>
+      
+        
+    
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <NuxtLink to="/" class="text-blue-600 dark:text-blue-400 hover:underline">首頁</NuxtLink>
+        <span class="text-gray-400 dark:text-gray-600 mx-1">/</span>
+        <NuxtLink to="/regulation" class="text-blue-600 dark:text-blue-400 hover:underline">法規系統</NuxtLink>
+        <span class="text-gray-400 dark:text-gray-600 mx-1">/</span>
+        空白對照表
+      </p>
+      
       <h1 class="text-3xl font-bold mb-4">
         產生修正條文對照表（含總說明）
       </h1>
+
+      <p class="mb-4 text-lg">
+        《{{ regulationData.titleFull }}》
+      </p>
       
       <p class="mb-4">
-        本頁面提供學生自治會內部同學使用。當您要提案修正《{{ regulationData.titleFull }}》時，可點擊下方的按鈕，產生修正條文對照表（含總說明）的 Microsoft Word (.docx) 檔案，作為提案附件。
+        本頁面提供學生自治會內部同學使用。當您要提案修正此法規時，可點擊下方的按鈕，產生修正條文對照表（含總說明）的 Microsoft Word (.docx) 檔案，作為提案附件。
       </p>
 
       <p class="mb-4">
