@@ -55,7 +55,7 @@
             
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <NuxtLink :to="`/regulation/${id}/amend`" target="_blank" class="text-yellow-600 dark:text-yellow-400 hover:underline">
-                空白對照表
+                對照表
               </NuxtLink>
             </td>
 
@@ -67,7 +67,7 @@
 
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <NuxtLink :to="`/regulation/${id}/source-code`" target="_blank" class="text-gray-600 dark:text-gray-400 hover:underline">
-                複製原始碼
+                原始碼
               </NuxtLink>
             </td>
 
