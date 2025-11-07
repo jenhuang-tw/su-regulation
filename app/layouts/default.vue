@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+  <div class="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 overflow-x-hidden">
     
-<header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-10">
-      <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-10">
+      <nav class="container mx-auto">
         <div class="flex justify-between items-center h-16">
           
           <div>
@@ -36,7 +36,7 @@
       </nav>
     </header>
 
-    <main class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <main class="container mx-auto py-8">
       <slot />
     </main>
 
@@ -58,8 +58,8 @@ function toggleMode() {
 <style>
 @tailwind base;
 
-
+/* 再次明確移除 body 的邊界 */
 body {
-  margin: 0; /* 再次明確移除 body 的邊界 */
+  margin: 0; 
 }
 </style>
