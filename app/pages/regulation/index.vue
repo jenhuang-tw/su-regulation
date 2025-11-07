@@ -11,7 +11,9 @@
       國立臺北大學學生自治會 法規系統 v2.2
     </h1>
     <p class="text-base text-gray-700 dark:text-gray-300 mb-8">
-      請優先至本會網站查詢。任何疑問請洽總會秘書處。
+      法規系統是本會內部法制作業使用。一般同學可至<a href="https://ntpusu.org/regulation-index" target="_blank" class="text-blue-500 hover:text-blue-400 hover:underline">
+            會網法規資料庫
+          </a>查詢。使用上的任何疑問請洽總會秘書處。
     </p>
 
     <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">

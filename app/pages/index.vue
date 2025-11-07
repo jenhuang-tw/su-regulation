@@ -9,15 +9,24 @@
       />
 
       <h1 class="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800 dark:text-gray-100">
-        臺北大學學生自治會<br>法規系統 v2.2
+        臺北大學學生會 NTPUSU
       </h1>
 
       <div class="text-center mb-6">
         <NuxtLink 
-          to="/regulation" 
+          to="https://ntpusu.org/regulation-index" 
           class="no-underline inline-block text-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-300"
         >
-          進入法規系統
+          法規資料庫
+        </NuxtLink>
+      </div>
+
+      <div class="text-center mb-6">
+        <NuxtLink 
+          to="/regulation" 
+          class="no-underline inline-block text-center px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg shadow-md transition duration-300"
+        >
+          法規系統（內部使用）
         </NuxtLink>
       </div>
 
@@ -26,7 +35,7 @@
           這個系統是本會內部維護資料使用的。
           <br class="sm:hidden" /> 如果您是本校同學，請查閱
           <a href="https://ntpusu.org/regulation-index" target="_blank" class="text-blue-500 hover:text-blue-400 hover:underline">
-            法規資料庫官網
+            法規資料庫
           </a>。
         </p>
         <p>
