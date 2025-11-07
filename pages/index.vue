@@ -9,7 +9,7 @@
       />
 
       <h1 class="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800 dark:text-gray-100">
-        臺北大學學生自治會<br>法規系統 v2.1
+        臺北大學學生自治會<br>法規系統 v2.2
       </h1>
 
       <NuxtLink 
@@ -45,7 +45,7 @@ definePageMeta({
 })
 
 useHead({
-  title: '法規系統 v2.1 - 臺北大學學生會'
+  title: '法規系統 v2.2 - 臺北大學學生會'
 })
 </script>
 
