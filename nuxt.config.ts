@@ -30,15 +30,15 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    '@nuxt/image',
+    '@nuxt/image', 
     '@nuxtjs/tailwindcss', 
-    '@nuxtjs/color-mode',  // <-- 新增
-    'nuxt-icon'            // <-- 新增
+    '@nuxtjs/color-mode', 
+    '@nuxt/icon'
   ],
 
   colorMode: {
     classSuffix: '', // 讓 Tailwind 的 dark: class 直接生效
-    preference: 'system', // 'system' - 自動偵測OS偏好
+    preference: 'system',
     fallback: 'light', // 當偵測不到時的預設值
   }
 
