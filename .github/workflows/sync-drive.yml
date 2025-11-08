@@ -27,7 +27,7 @@ jobs:
       - name: 3. 設定 Node.js 環境
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
 
       - name: 4. 安裝 Python 相依套件
