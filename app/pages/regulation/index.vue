@@ -16,6 +16,41 @@
           </a>查詢。使用上的任何疑問請洽總會秘書處。
     </p>
 
+    <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">依校區篩選：</h3>
+      <div class="flex flex-wrap gap-6">
+        <label class="inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            value="common" 
+            v-model="selectedTypes"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+          >
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-200">共通法規</span>
+        </label>
+
+        <label class="inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            value="sanxia" 
+            v-model="selectedTypes"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+          >
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-200">三峽校區</span>
+        </label>
+
+        <label class="inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            value="taipei" 
+            v-model="selectedTypes"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+          >
+          <span class="ml-2 text-sm text-gray-700 dark:text-gray-200">臺北校區</span>
+        </label>
+      </div>
+    </div>
+
     <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
       
       <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -37,7 +72,7 @@
         </thead>
         
         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-          <tr v-for="([id, title]) in lawList" :key="id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <tr v-for="([id, title]) in filteredLawList" :key="id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             
             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
               {{ id.toString().padStart(4, '0') }}
@@ -74,6 +109,11 @@
             </td>
 
           </tr>
+          <tr v-if="filteredLawList.length === 0">
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+              沒有符合篩選條件的法規。
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -86,8 +126,6 @@
 </template>
 
 <script setup lang="js">
-// 關鍵：改用 'default' 佈局，
-// 這樣 'preflight' 和暗色模式才會生效
 definePageMeta({
   layout: 'default' 
 })
@@ -95,6 +133,9 @@ definePageMeta({
 useHead({
   title: '法規列表 | 臺北大學學生會 法規系統'
 })
+
+// 1. 定義篩選狀態，預設全部勾選
+const selectedTypes = ref(['common', 'sanxia', 'taipei']);
 
 const lawList = [
   [7,'學生自治訴訟法'],
@@ -125,10 +166,29 @@ const lawList = [
   [2194,'三峽校區學生議會委員會規程'],
   [2254,'學生自治低落對策委員會規程'],
 ];
-</script>
 
-<style scoped>
-/* 所有樣式都已被 Tailwind class 取代，
-  因此這個 <style> 區塊可以保持空白或直接刪除。
-*/
-</style>
+// 2. 建立計算屬性來過濾清單
+const filteredLawList = computed(() => {
+  return lawList.filter(([id]) => {
+    const idStr = id.toString();
+    let show = false;
+
+    // 共通法規：編號以 3 或 6 開頭
+    if (selectedTypes.value.includes('common')) {
+      if (idStr.startsWith('3') || idStr.startsWith('6')) show = true;
+    }
+
+    // 三峽校區：編號以 1 或 2 開頭
+    if (selectedTypes.value.includes('sanxia')) {
+      if (idStr.startsWith('1') || idStr.startsWith('2')) show = true;
+    }
+
+    // 臺北校區：編號以 4 或 5 開頭
+    if (selectedTypes.value.includes('taipei')) {
+      if (idStr.startsWith('4') || idStr.startsWith('5')) show = true;
+    }
+
+    return show;
+  });
+});
+</script>
