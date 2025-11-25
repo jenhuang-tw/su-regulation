@@ -40,7 +40,7 @@
         </p>
         <p>
           GitHub 儲存庫：
-          <a href="https://github.com/jenhuang-tw/su-regulation/tree/main/public/regulations" target="_blank" class="text-blue-500 hover:text-blue-400 hover:underline">
+          <a href="https://github.com/NTPU-Student-Headquarters/ntpush-regulation/tree/main/public/regulations" target="_blank" class="text-blue-500 hover:text-blue-400 hover:underline">
             法規資料
           </a>
         </p>
@@ -56,7 +56,7 @@ definePageMeta({
 })
 
 useHead({
-  title: '法規系統 v2.2 - 臺北大學學生會'
+  title: '法規系統 - 臺北大學學生會'
 })
 </script>
 
