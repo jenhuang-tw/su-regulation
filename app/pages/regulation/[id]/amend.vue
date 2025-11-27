@@ -4,6 +4,7 @@
       <p>正在載入法規資料...</p>
     </div>
 
+    <!-- 恢復原始錯誤訊息文字 -->
     <div v-else-if="error || !regulationData" class="text-center text-red-600">
       <p>載入法規資料失敗。您可能輸入了錯誤的法規 ID，如有疑問，請將下列錯誤訊息回報給會網維護小組的同學。</p>
       <pre v-if="error">{{ error.message }}</pre>
@@ -11,8 +12,6 @@
 
     <div v-else>
       
-        
-    
       <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
         <NuxtLink to="/" class="text-blue-600 dark:text-blue-400 hover:underline">首頁</NuxtLink>
         <span class="text-gray-400 dark:text-gray-600 mx-1">/</span>
@@ -45,12 +44,15 @@
         文件自動抓取所有條文。沒有要修正的條文，可以手動整列刪除。
       </p>
 
-      <button 
-        @click="downloadDocument"
-        class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-      >
-        下載「{{ regulationData.titleShort || '法規' }}」空白對照表 Word 檔
-      </button>
+      <div class="flex items-center gap-4">
+        <button 
+          @click="downloadDocument"
+          :disabled="isGenerating"
+          class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+        >
+          {{ isGenerating ? '正在產生文件...' : `下載「${regulationData.titleShort || '法規'}」空白對照表 Word 檔` }}
+        </button>
+      </div>
 
       <div class="mt-8 border border-gray-300 p-4 rounded-lg">
         <h2 class="text-2xl font-semibold border-b pb-2 mb-4">
@@ -59,6 +61,7 @@
 
         <h3 class="text-xl font-semibold mt-4">總說明</h3>
         <div class="prose mt-2 p-4 bg-gray-50 border rounded">
+          <!-- 恢復原始預覽文字 -->
           <p>「有些人常調侃學生自治是一群政治咖在玩的扮家家酒，掛牌一個議座、法官、什麼什麼部長自嗨而已。惟學生自治會實際上擁有的預算超過百萬，對學校各級會議都有一定的表決權利，甚至在學生權益遭受侵害而向學校申訴時，也有學生代表的身影在其中。如果說這是一個扮家家酒組織，那也是在玩一個非常有錢的扮家家酒，而每一分錢都是同學們納的稅跟繳納的學生會費，如果沒有完善的法規規劃以及分權制衡機關，我們不僅是對不起全校同學，更對不起全國納稅義務人。」</p><p>陳泓霖（第22-23屆學生法官），〈是死灰復生的鳳凰，抑或是曇花一現的煙花——學生法官陳泓霖卸任感言〉，2023年10月20日</p>
         </div>
 
@@ -102,25 +105,17 @@
 
 <script setup lang="ts">
 // --- 1. 匯入 (Imports) ---
-import { computed } from 'vue';
-import { useRoute, useAsyncData } from '#app';
-import { 
-  Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, 
-  HeadingLevel, WidthType, AlignmentType, VerticalAlign, BorderStyle,
-  Header, Footer, PageNumber
-} from 'docx';
+import { computed, ref } from 'vue';
+import { useRoute } from '#app';
+// 改為動態匯入，故移除靜態的 import docx
+// import { Document, Packer... } from 'docx';
 import { saveAs } from 'file-saver';
+
+
 
 // --- 2. 型別定義 (Type Definitions) ---
 
-/** API 回應的結構 (原始) */
-interface ApiRegulationResponse {
-  titleFull: string;
-  titleShort: string;
-  fullText: string;
-}
-
-/** 組件內部使用的結構 (已解析) */
+// 用 useRegulation 提供的型別，惟保留 ParsedRegulationData 供內部使用
 interface ParsedRegulationData {
   titleFull: string;
   titleShort: string;
@@ -129,7 +124,7 @@ interface ParsedRegulationData {
 
 // --- 3. 常數 (Constants) ---
 
-/** 總說明欄位的預設文字 (用於 Word) */
+/** 總說明欄位的預設文字 (用於 Word) - 恢復原始完整文字 */
 const DEFAULT_AMEND_TEXT = [
   "請您在此撰寫修正總說明。",
   "", // 空行
@@ -195,26 +190,21 @@ function getRocDateString(): string {
 // --- 5. 資料擷取 (Data Fetching) ---
 
 const route = useRoute();
-const regulationId = computed(() => route.params.id as string);
+const id = route.params.id as string;
+const isGenerating = ref(false); // 新增狀態：是否正在產生文件
 
-/**
- * 使用 `useAsyncData` 從 API 獲取並轉換資料
- */
-const { data: regulationData, pending, error } = await useAsyncData<ParsedRegulationData>(
-  `regulation-amend-${regulationId.value}`, 
-  async () => {
-    const apiResponse = await $fetch<ApiRegulationResponse>(`/api/regulation/single/${regulationId.value}`);
-    const bodyLines = parseHtmlToBodyLines(apiResponse.fullText);
+// 使用 useRegulation 統一管理 API (SSR)
+const { data: rawRegulation, pending, error } = await useRegulation(id);
+
+// 使用 computed 將原始資料轉換為此頁面需要的格式 (ParsedRegulationData)
+const regulationData = computed<ParsedRegulationData | null>(() => {
+    if (!rawRegulation.value) return null;
     return {
-      titleFull: apiResponse.titleFull,
-      titleShort: apiResponse.titleShort,
-      bodyLines: bodyLines,
+        titleFull: rawRegulation.value.titleFull,
+        titleShort: rawRegulation.value.titleShort,
+        bodyLines: parseHtmlToBodyLines(rawRegulation.value.fullText)
     };
-  },
-  {
-    watch: [regulationId] 
-  }
-);
+});
 
 // --- 6. 預覽頁面輔助函式 (Preview Helpers) ---
 
@@ -230,21 +220,85 @@ function isChapter(text: string): boolean {
  */
 async function downloadDocument() {
   if (!regulationData.value) return; 
+  isGenerating.value = true;
 
-  // (*** 傳入 regulationData 以供頁首/Metadata 使用 ***)
-  const doc = createDocx(regulationData.value);
-  const blob = await Packer.toBlob(doc);
-  
-  const rocDate = getRocDateString();
-  const filename = `${regulationData.value.titleShort || '法規'}修正案_${rocDate}.docx`;
-  
-  saveAs(blob, filename);
+  try {
+    // *** 優化關鍵：動態匯入 docx，減少初始載入流量 ***
+    const docxLib = await import('docx');
+    const { Packer } = docxLib;
+
+    // (*** 傳入 regulationData 與 docxLib 以供頁首/Metadata 使用 ***)
+    const doc = createDocx(regulationData.value, docxLib);
+    const blob = await Packer.toBlob(doc);
+    
+    const rocDate = getRocDateString();
+    const filename = `${regulationData.value.titleShort || '法規'}修正案_${rocDate}.docx`;
+    
+    saveAs(blob, filename);
+  } catch (e) {
+    console.error('產生文件失敗', e);
+    alert('產生文件失敗，請檢查主控台錯誤');
+  } finally {
+    isGenerating.value = false;
+  }
 }
 
 /**
  * 核心：建立 `docx.Document` 物件
+ * 注意：因改為動態匯入，需將 docxLib 傳入以使用其中的 Classes
  */
-function createDocx(data: ParsedRegulationData): Document {
+function createDocx(data: ParsedRegulationData, docxLib: any) {
+  const { 
+    Document, Paragraph, TextRun, Table, TableRow, TableCell, 
+    WidthType, AlignmentType, VerticalAlign, BorderStyle,
+    Header, Footer, PageNumber 
+  } = docxLib;
+
+  // --- 8. 表格輔助函式 (Table Cell Helpers) ---
+  // (移至內部以存取 docxLib)
+
+  /** 建立「表格標題」儲存格 */
+  function createHeaderCell(text: string) {
+    return new TableCell({
+      children: [ new Paragraph({ text: text, alignment: AlignmentType.CENTER, style: "tablePara" }) ],
+      verticalAlign: VerticalAlign.CENTER,
+      shading: { fill: "F2F2F2" }
+    });
+  }
+
+  /** 建立「表格內文」儲存格 */
+  function createDataCell(text: string, styleId: string, isBold: boolean = false) {
+    const lines = text.split('\n'); // e.g., ["第 1 條", "　內容"]
+    
+    const paragraphs = lines.map((line: string, index: number) => {
+      let lineIsBold = isBold;
+      if (!isBold && index === 0 && /^(第.+條)/.test(line.trim())) {
+        lineIsBold = true;
+      }
+      return new Paragraph({
+        children: [
+          new TextRun({
+            text: line,
+            bold: lineIsBold
+          })
+        ],
+        style: styleId
+      });
+    });
+
+    return new TableCell({
+      children: paragraphs,
+      verticalAlign: VerticalAlign.TOP,
+    });
+  }
+
+  /** 建立「空白」儲存格 */
+  function createEmptyCell(styleId: string) {
+    return new TableCell({
+      children: [ new Paragraph({ text: "", style: styleId }) ],
+      verticalAlign: VerticalAlign.TOP,
+    });
+  }
   
   const margins = { top: 1417, right: 1417, bottom: 1417, left: 1417 };
   const defaultFont = {
@@ -258,12 +312,60 @@ function createDocx(data: ParsedRegulationData): Document {
     font: { ascii: "Times New Roman", eastAsia: "標楷體" }
   };
 
-  const doc = new Document({
-    
+  // 建立條文對照表 Table
+  const columnWidths = [3025, 3025, 3025]; // 欄寬
+  const tableStyle = "tablePara"; 
+
+  const headerRow = new TableRow({
+    tableHeader: true,
+    children: [
+      createHeaderCell("修正條文"),
+      createHeaderCell("現行條文"),
+      createHeaderCell("說明"),
+    ],
+  });
+
+  const contentRows: any[] = []; // TableRow[]
+
+  // 法規標題
+  contentRows.push(new TableRow({
+    children: [
+      createEmptyCell(tableStyle), 
+      createDataCell(data.titleFull, tableStyle, true), 
+      createEmptyCell(tableStyle), 
+    ]
+  }));
+  
+  // 遍歷法規內文
+  data.bodyLines.forEach(line => {
+    contentRows.push(
+      new TableRow({
+        children: [
+          createEmptyCell(tableStyle), 
+          createDataCell(line, tableStyle, isChapter(line)), 
+          createEmptyCell(tableStyle), 
+        ]
+      })
+    );
+  });
+
+  const amendmentTable = new Table({
+    rows: [headerRow, ...contentRows],
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    columnWidths: columnWidths,
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+      bottom: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+      left: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+      right: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+      insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+      insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
+    }
+  });
+
+  return new Document({
     creator: "NTPU學生會法規系統",
     title: `${data.titleShort}修正提案附件`,
-
-    // 樣式
     styles: {
       default: { document: { run: defaultFont } },
       paragraphStyles: [
@@ -275,12 +377,10 @@ function createDocx(data: ParsedRegulationData): Document {
         }
       ]
     },
-    // 頁面設定
     sections: [{
       properties: {
         page: { margin: margins, size: { width: 11909, height: 16834 } }, // A4
       },
-      // 頁首
       headers: {
         default: new Header({
           children: [
@@ -312,7 +412,6 @@ function createDocx(data: ParsedRegulationData): Document {
           ],
         }),
       },
-      // 頁尾
       footers: {
         default: new Footer({
           children: [
@@ -328,9 +427,7 @@ function createDocx(data: ParsedRegulationData): Document {
           ],
         }),
       },
-      // 頁面主要內容
       children: [
-        // 1. 文件標題
         new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { after: 240 },
@@ -345,7 +442,6 @@ function createDocx(data: ParsedRegulationData): Document {
           ]
         }),
         
-        // 2. 總說明
         new Paragraph({
           spacing: { after: 120 },
           children: [
@@ -359,7 +455,6 @@ function createDocx(data: ParsedRegulationData): Document {
           ]
         }),
         
-        // 總說明 - 假文
         ...DEFAULT_AMEND_TEXT.map(text => 
           new Paragraph({
             text: text,
@@ -368,7 +463,6 @@ function createDocx(data: ParsedRegulationData): Document {
           })
         ),
         
-        // 3. 條文對照表
         new Paragraph({
           spacing: { after: 120, before: 120 },
           children: [
@@ -382,133 +476,11 @@ function createDocx(data: ParsedRegulationData): Document {
           ]
         }),
 
-        // 4. 表格
-        createAmendmentTable(data),
+        amendmentTable,
       ],
     }],
   });
-  return doc;
 }
-
-/**
- * 建立條文對照表
- */
-function createAmendmentTable(data: ParsedRegulationData): Table {
-  
-  // (*** 1. 平均分配欄寬 ***)
-  // A4 寬 (11909) - 左右邊距 (1417*2 = 2834) = 9075
-  // 9075 / 3 = 3025
-  const columnWidths = [3025, 3025, 3025];
-  const tableStyle = "tablePara"; 
-
-  // 表格標題列
-  const headerRow = new TableRow({
-    tableHeader: true, // 跨頁重複
-    children: [
-      createHeaderCell("修正條文"),
-      createHeaderCell("現行條文"),
-      createHeaderCell("說明"),
-    ],
-  });
-
-  // 建立內容列
-  const contentRows: TableRow[] = [];
-
-  // 法規標題
-  contentRows.push(new TableRow({
-    children: [
-      createEmptyCell(tableStyle), 
-      createDataCell(data.titleFull, tableStyle, true), // 粗體
-      createEmptyCell(tableStyle), 
-    ]
-  }));
-  
-  // 遍歷法規內文
-  data.bodyLines.forEach(line => {
-    const isChap = isChapter(line); 
-    contentRows.push(
-      new TableRow({
-        children: [
-          createEmptyCell(tableStyle), 
-          createDataCell(line, tableStyle, isChap), // 傳入多行字串
-          createEmptyCell(tableStyle), 
-        ]
-      })
-    );
-  });
-
-  // 回傳表格 (含所有框線)
-  return new Table({
-    rows: [headerRow, ...contentRows],
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    columnWidths: columnWidths, // (*** 應用平均欄寬 ***)
-    borders: {
-      top: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-      bottom: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-      left: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-      right: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-      insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-      insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "auto" },
-    }
-  });
-}
-
-// --- 8. 表格輔助函式 (Table Cell Helpers) ---
-
-/** 建立「表格標題」儲存格 */
-function createHeaderCell(text: string): TableCell {
-  return new TableCell({
-    children: [ new Paragraph({ text: text, alignment: AlignmentType.CENTER, style: "tablePara" }) ],
-    verticalAlign: VerticalAlign.CENTER,
-    shading: { fill: "F2F2F2" }
-  });
-}
-
-/**
- * 建立「表格內文」儲存格 (亦即：從資料庫獲取現行條文，並逐列輸出之)
- */
-function createDataCell(text: string, styleId: string, isBold: boolean = false): TableCell {
-  
-  const lines = text.split('\n'); // e.g., ["第 1 條", "　內容"]
-  
-  // 1. 將 `lines` 陣列 轉譯 (map) 成 `Paragraph` 陣列
-  const paragraphs: Paragraph[] = lines.map((line, index) => {
-    
-    let lineIsBold = isBold; // 預設 (用於章節)
-    
-    // 2. 自動將條號 (多行文字的第一行) 加粗
-    if (!isBold && index === 0 && /^(第.+條)/.test(line.trim())) {
-      lineIsBold = true;
-    }
-
-    // 3. 為 *每一行* 建立一個 *新的 Paragraph*
-    return new Paragraph({
-      children: [
-        new TextRun({
-          text: line,
-          bold: lineIsBold
-        })
-      ],
-      style: styleId // 應用 "tablePara" 樣式 (無段距)
-    });
-  });
-
-  // 4. 回傳包含 Paragraph 陣列的 TableCell
-  return new TableCell({
-    children: paragraphs,
-    verticalAlign: VerticalAlign.TOP,
-  });
-}
-
-/** 建立「空白」儲存格 */
-function createEmptyCell(styleId: string): TableCell {
-  return new TableCell({
-    // 空白儲存格也需要一個空的 Paragraph
-    children: [ new Paragraph({ text: "", style: styleId }) ],
-    verticalAlign: VerticalAlign.TOP,
-  });
-}
-
 </script>
 
 <style>

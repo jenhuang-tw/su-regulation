@@ -1,49 +1,55 @@
 <template>
     <div>
+        <div v-if="pending" style="padding: 20px; text-align: center;">
+            載入中...
+        </div>
 
-<p><span style="font-weight: bold;">法規名稱：</span>{{ regulation.titleFull }} <span v-if="regulation.status === 'abandoned'"><span style="color: red;">(廢止)</span></span></p>
+        
+        <div v-else-if="error" style="padding: 20px; color: red;">
+            【讀取失敗】有問題請將以下錯誤訊息回報給會網維護小組：{{ error.message }}
+        </div>
 
-<p><span style="font-weight: bold;">{{ regulation.modifiedType }}日期：</span>{{ regulation.modifiedDate }}</p>
+        <!-- 成功載入 -->
+        <div v-else-if="regulation">
+            <p>
+                <span style="font-weight: bold;">法規名稱：</span>
+                {{ regulation.titleFull }} 
+                <span v-if="regulation.status === 'abandoned'">
+                    <span style="color: red;">(廢止)</span>
+                </span>
+            </p>
 
-<h2 class="wp-block-heading">全文</h2>
+            <p>
+                <span style="font-weight: bold;">{{ regulation.modifiedType }}日期：</span>
+                {{ regulation.modifiedDate }}
+            </p>
 
-<div v-if="regulation.fullText" v-html="regulation.fullText"></div>
+            <h2 class="wp-block-heading">全文</h2>
+            <div v-if="regulation.fullText" v-html="regulation.fullText"></div>
 
-<h2 class="wp-block-heading">沿革</h2>
-<ol>
-  <li v-for="(item, index) in regulation.history" :key="index" v-html="item"></li>
-</ol>
+            <h2 class="wp-block-heading">沿革</h2>
+            <ol>
+                <li v-for="(item, index) in regulation.history" :key="index" v-html="item"></li>
+            </ol>
+        </div>
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 definePageMeta({
   layout: 'minimal'
 })
 
 const route = useRoute();
-const id = route.params.id;
+const id = route.params.id as string;
 
-const regulation = ref({
-  titleFull: '',
-  titleShort: '',
-  modifiedType: '',
-  modifiedDate: '',
-  status: '',
-  history: '',
-  fullText: ''
-})
-
-const { data: regulationData, error } = await useFetch(`/api/regulation/single/${id}`)
-
-if (error.value) {
-  // console.error('讀取錯誤：', error.value)
-  regulation.value.fullText = `<span style="color: red;">【讀取失敗】有問題請將以下錯誤訊息回報給會網維護小組：${error.value}</span>`
-} else if (regulationData.value) {
-  regulation.value = regulationData.value
-}
+// 使用 Composable (API 優化)
+import { useRegulation } from '~/composables/useRegulation';
+const { data: regulation, pending, error } = await useRegulation(id);
 
 useHead({
-  title: () => regulation.value.titleShort + ' - 臺北大學學生會法規系統'
+  title: () => regulation.value 
+    ? `${regulation.value.titleShort} - 臺北大學學生會法規系統`
+    : '載入中...'
 })
 </script>

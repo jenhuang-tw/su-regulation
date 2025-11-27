@@ -3,74 +3,68 @@
   <div>
     <h1 style="font-size: 1.5rem; margin-bottom: 1rem; font-weight: bold;">HTML 原始碼</h1>
 
-    <button @click="copyToClipboard">
-      Copy all
-    </button>
+    <div v-if="pending">正在產生原始碼...</div>
+    
+    <div v-else-if="error" style="color: red;">
+      讀取失敗：{{ error.message }}
+    </div>
 
-    <textarea
-      :value="generatedHtmlSource"
-      readonly
-    ></textarea>
+    <div v-else>
+        <button @click="copyToClipboard">
+          Copy all
+        </button>
+
+        <textarea
+          :value="generatedHtmlSource"
+          readonly
+        ></textarea>
+    </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue' 
-import matter from 'gray-matter'
+<script setup lang="ts">
+import { computed } from 'vue' 
+import { useRegulation } from '~/composables/useRegulation';
 
 const route = useRoute();
-const id = route.params.id;
+const id = route.params.id as string;
 
-const regulation = ref({
-  titleFull: '',
-  titleShort: '',
-  modifiedType: '',
-  modifiedDate: '',
-  status: '',
-  history: [], 
-  fullText: ''
-})
+// --- 使用 Composable ---
+const { data: regulation, pending, error } = await useRegulation(id);
 
-onMounted(async () => {
-  try {
-    const res = await fetch(`/api/regulation/single/${id}`)
-    if (!res.ok) throw new Error('前端呼叫 API 後，得到失敗的回應。')
-    const data = await res.json()
-    regulation.value = data
-  } catch (err) {
-    console.error('讀取錯誤：', err)
-    regulation.value.fullText = '（讀取失敗）'
-  }
-})
-
-// 3. 將 useHead 的 title 改為 computed，才能在資料載入後正確反應
 useHead({
-  title: computed(() => `${regulation.value.titleShort || '法規'} (原始碼) - 臺北大學學生會 法規系統`)
+  title: computed(() => regulation.value 
+    ? `${regulation.value.titleShort} (原始碼) - 臺北大學學生會 法規系統`
+    : '載入中...')
 })
 
-// 4. 建立 Computed Property 來產生原始碼字串
+// 建立 Computed Property 來產生原始碼字串
 const generatedHtmlSource = computed(() => {
+  if (!regulation.value) return '';
+
+  const reg = regulation.value;
+
   // 處理 (廢止) 狀態
-  const abandonedSpan = regulation.value.status === 'abandoned'
+  const abandonedSpan = reg.status === 'abandoned'
     ? ' <span style="color: red;">(廢止)</span>'
     : '';
 
   // 處理沿革 (<li> 列表)
   // 檢查 history 是否為陣列，避免 API 異常時出錯
   let historyItems = '';
-  if (Array.isArray(regulation.value.history)) {
-    historyItems = regulation.value.history
+  if (Array.isArray(reg.history)) {
+    historyItems = reg.history
       .map(item => `  <li>${item}</li>`)
       .join('\n'); // 用換行符和縮排組合
   }
 
-  // 使用模板字面值 (``) 來組合完整的 HTML 字串
+  // 組合 HTML
   return `
-<p><span style="font-weight: bold;">法規名稱：</span>${regulation.value.titleFull}${abandonedSpan}</p>
-<p><span style="font-weight: bold;">${regulation.value.modifiedType}日期：</span>${regulation.value.modifiedDate}</p>
+<p><span style="font-weight: bold;">法規名稱：</span>${reg.titleFull}${abandonedSpan}</p>
+<p><span style="font-weight: bold;">${reg.modifiedType}日期：</span>${reg.modifiedDate}</p>
 <h2 class="wp-block-heading">全文</h2>
 <div>
-${regulation.value.fullText || ''}
+${reg.fullText || ''}
 </div>
 <h2 class="wp-block-heading">沿革</h2>
 <ol>
@@ -79,8 +73,10 @@ ${historyItems}
   `.trim(); // .trim() 移除開頭和結尾多餘的空白
 });
 
-// 5. 撰寫複製到剪貼簿的功能
+// 複製到剪貼簿 (僅 Client 端)
 async function copyToClipboard() {
+  if (!generatedHtmlSource.value) return;
+  
   try {
     await navigator.clipboard.writeText(generatedHtmlSource.value);
     alert('已成功複製到剪貼簿！');

@@ -1,68 +1,64 @@
 <template>
     <div class="print-page-wrapper">
         
-        <div class="print-header">
-            <p class="print-timestamp">{{ printTimestamp }}</p>
-            <button @click="doPrint" class="print-button">列印本頁</button>
+        <!-- 1. 讀取與錯誤狀態處理 -->
+        <div v-if="pending" class="loading-state">
+            <p>正在準備列印文件...</p>
         </div>
 
-        <h1 class="regulation-title-print">
-            {{ regulation.titleFull }} 
-            <span v-if="regulation.status === 'abandoned'" style="color: red;">(廢止)</span>
-        </h1>
+        <div v-else-if="error" class="error-state">
+            <h3>無法讀取法規</h3>
+            <p>{{ error.message }}</p>
+        </div>
 
-        <p class="regulation-date-print">
-            {{ regulation.modifiedDate }}{{ regulation.modifiedType }}版本<br /><span style="font-size: smaller;">（完整修正歷程詳條文末）</span>
-        </p>
+        <!-- 2. 資料載入成功後顯示內容 -->
+        <div v-else-if="regulation">
+            <div class="print-header">
+                <p class="print-timestamp">{{ printTimestamp }}</p>
+                <button @click="doPrint" class="print-button">列印本頁</button>
+            </div>
 
-        <div v-if="regulation.fullText" v-html="regulation.fullText"></div>
+            <h1 class="regulation-title-print">
+                {{ regulation.titleFull }} 
+                <span v-if="regulation.status === 'abandoned'" style="color: red;">(廢止)</span>
+            </h1>
 
-        <hr class="history-separator" />
-        <p class="history-title">沿革</p>
-        <ol>
-            <li v-for="(item, index) in regulation.history" :key="index" v-html="item"></li>
-        </ol>
+            <p class="regulation-date-print">
+                {{ regulation.modifiedDate }}{{ regulation.modifiedType }}版本<br /><span style="font-size: smaller;">（完整修正歷程詳條文末）</span>
+            </p>
 
+            <div v-if="regulation.fullText" v-html="regulation.fullText"></div>
+
+            <hr class="history-separator" />
+            <p class="history-title">沿革</p>
+            <ol>
+                <li v-for="(item, index) in regulation.history" :key="index" v-html="item"></li>
+            </ol>
+        </div>
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { useRegulation } from '~/composables/useRegulation';
+
 definePageMeta({
   layout: 'minimal'
 })
-// --- Script 區塊與前一版相同，無需變更 ---
-
-import matter from 'gray-matter'
 
 const route = useRoute();
-const id = route.params.id;
-
-// 用於儲存 "X年X月X日 HH:MM..." 的字串
+const id = route.params.id as string; // 強制轉型 string 避免型別錯誤
 const printTimestamp = ref('');
 
-// 用於觸發瀏覽器列印
+// --- 改用 Composable (支援 SSR) ---
+const { data: regulation, pending, error } = await useRegulation(id);
+
+// 用於觸發瀏覽器列印 (僅在 Client 端執行)
 function doPrint() {
   window.print();
 }
 
-const regulation = ref({
-  titleFull: '',
-  titleShort: '',
-  modifiedType: '',
-  modifiedDate: '',
-  status: '',
-  history: '',
-  fullText: ''
-})
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`/api/regulation/single/${id}`)
-    if (!res.ok) throw new Error('前端呼叫 API 後，得到失敗的回應。')
-    const data = await res.json()
-    regulation.value = data
-
-    // 獲取資料後，設定當前的列印時間
+onMounted(() => {
+    // 只有在瀏覽器端才計算當下時間
     const now = new Date();
     const y = now.getFullYear();
     const m = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -70,16 +66,13 @@ onMounted(async () => {
     const h = now.getHours().toString().padStart(2, '0');
     const min = now.getMinutes().toString().padStart(2, '0');
     printTimestamp.value = `臺北大學學生會法規系統 ${y}/${m}/${d} ${h}:${min} 列印`;
-
-  } catch (err) {
-    console.error('讀取錯誤：', err)
-    regulation.value.fullText = '（讀取失敗）'
-  }
 })
 
 useHead({
-  // 更新頁面標題
-  title: () => '列印「' + regulation.value.titleShort + '」 - 臺北大學學生會法規系統'
+  // 使用 computed getter 確保 title 隨資料更新
+  title: () => regulation.value 
+    ? `列印「${regulation.value.titleShort}」 - 臺北大學學生會法規系統` 
+    : '載入中 - 臺北大學學生會法規系統'
 })
 </script>
 
@@ -97,6 +90,15 @@ useHead({
   font-family: 'Times New Roman', '標楷體', 'DFKai-SB', serif;
   font-size: 12pt;
   line-height: 16pt;
+}
+
+.loading-state, .error-state {
+    text-align: center;
+    padding: 2rem;
+    font-family: sans-serif;
+}
+.error-state {
+    color: red;
 }
 
 /* 標題 */
@@ -209,14 +211,6 @@ useHead({
 @media print {
   .print-header {
     display: none;
-    /*
-    border-bottom: 0px;
-    padding-bottom: 0px;
-    margin-bottom: 5px;
-    text-align: right !important;
-    font-family: 'Times New Roman', '新細明體', -apple-system, sans-serif;
-    font-size: 9pt;
-    */
   }
   .print-button {
     display: none;
@@ -225,6 +219,9 @@ useHead({
      margin: 0;
      padding: 0;
      max-width: 100%;
+  }
+  .loading-state, .error-state {
+      display: none; /* 列印時隱藏錯誤或載入訊息 */
   }
 }
 </style>
