@@ -21,8 +21,6 @@ definePageMeta({
   layout: 'minimal'
 })
 
-import matter from 'gray-matter'
-
 const route = useRoute();
 const id = route.params.id;
 
@@ -36,17 +34,14 @@ const regulation = ref({
   fullText: ''
 })
 
-onMounted(async () => {
-  try {
-    const res = await fetch(`/api/regulation/single/${id}`)
-    if (!res.ok) throw new Error('前端呼叫 API 後，得到失敗的回應。')
-    const data = await res.json()
-    regulation.value = data
-  } catch (err) {
-    console.error('讀取錯誤：', err)
-    regulation.value.fullText = '（讀取失敗）'
-  }
-})
+const { data: regulationData, error } = await useFetch(`/api/regulation/single/${id}`)
+
+if (error.value) {
+  // console.error('讀取錯誤：', error.value)
+  regulation.value.fullText = `<span style="color: red;">【讀取失敗】有問題請將以下錯誤訊息回報給會網維護小組：${error.value}</span>`
+} else if (regulationData.value) {
+  regulation.value = regulationData.value
+}
 
 useHead({
   title: () => regulation.value.titleShort + ' - 臺北大學學生會法規系統'
