@@ -57,7 +57,7 @@ const regulation = ref({
 
 onMounted(async () => {
   try {
-    const res = await fetch(`/api/regulation/${id}`)
+    const res = await fetch(`/api/regulation/single/${id}`)
     if (!res.ok) throw new Error('前端呼叫 API 後，得到失敗的回應。')
     const data = await res.json()
     regulation.value = data

@@ -203,7 +203,7 @@ const regulationId = computed(() => route.params.id as string);
 const { data: regulationData, pending, error } = await useAsyncData<ParsedRegulationData>(
   `regulation-amend-${regulationId.value}`, 
   async () => {
-    const apiResponse = await $fetch<ApiRegulationResponse>(`/api/regulation/${regulationId.value}`);
+    const apiResponse = await $fetch<ApiRegulationResponse>(`/api/regulation/single/${regulationId.value}`);
     const bodyLines = parseHtmlToBodyLines(apiResponse.fullText);
     return {
       titleFull: apiResponse.titleFull,

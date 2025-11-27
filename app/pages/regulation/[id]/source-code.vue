@@ -15,7 +15,6 @@
 </template>
 
 <script setup>
-// 1. 從 vue 引入 computed
 import { ref, computed, onMounted } from 'vue' 
 import matter from 'gray-matter'
 
@@ -28,13 +27,13 @@ const regulation = ref({
   modifiedType: '',
   modifiedDate: '',
   status: '',
-  history: [], // 2. (修正) 初始值改為空陣列 []，避免 .map() 錯誤
+  history: [], 
   fullText: ''
 })
 
 onMounted(async () => {
   try {
-    const res = await fetch(`/api/regulation/${id}`)
+    const res = await fetch(`/api/regulation/single/${id}`)
     if (!res.ok) throw new Error('前端呼叫 API 後，得到失敗的回應。')
     const data = await res.json()
     regulation.value = data
@@ -44,12 +43,10 @@ onMounted(async () => {
   }
 })
 
-// 3. (修正) 將 useHead 的 title 改為 computed，才能在資料載入後正確反應
+// 3. 將 useHead 的 title 改為 computed，才能在資料載入後正確反應
 useHead({
   title: computed(() => `${regulation.value.titleShort || '法規'} (原始碼) - 臺北大學學生會 法規系統`)
 })
-
-// --- 以下為新增的程式碼 ---
 
 // 4. 建立 Computed Property 來產生原始碼字串
 const generatedHtmlSource = computed(() => {
