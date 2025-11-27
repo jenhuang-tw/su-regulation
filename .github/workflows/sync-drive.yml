@@ -69,11 +69,12 @@ jobs:
             # 執行 update-regulation-list.js
             node update-regulation-list.js
             
-            echo "將所有變更（.txt 和 index.vue）加入 Staging..."
+            echo "將所有變更（.txt 和 list.ts）加入 Staging..."
             # 將下載的 .txt 檔案變更加到 commit
             git add ./public/regulations/
-            # 將更新後的 index.vue 變更加到 commit
-            git add app/pages/regulation/index.vue
+            # 將更新後的 list.ts 變更加到 commit
+            git add server/api/regulation/list.ts
+            
             
             # 檢查是否有任何檔案（.txt 或 index.vue）被 staged
             # ! git diff --staged --quiet 會在有 staged 變更時回傳 true
