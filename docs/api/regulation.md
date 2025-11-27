@@ -1,0 +1,39 @@
+# 法規系統 API 文件
+
+## regulation/list
+
+路徑： `https://ntpush-regulation.pages.dev/api/regulation/list` ，無請求參數
+
+回應格式：法規清單 array，各元素為一個 array 代表法規，第一個子元素是法規代碼（四碼正整數），第二個子元素是法規簡稱（含有非 ASCII 字元的字串），例如
+
+```json
+[
+  [1101, "三峽校區學生會組織法"],
+  [1102, "三峽校區學生代表推派條例"],
+  [6001, "組織章程"],
+  [6003, "自治資訊公開法"],
+]
+```
+
+依本會暫定法規編號格式，代碼第一碼代表主管機關，請自行判讀
+
+## regulation/single/:id
+
+呼叫範例： `https://ntpush-regulation.pages.dev/api/regulation/single/6001`
+
+回傳範例：
+
+```json
+{
+  "titleFull": "國立臺北大學學生自治會組織章程",
+  "titleShort": "組織章程",
+  "modifiedType": "修正",
+  "modifiedDate": "2024年1月12日",
+  "status": "active",
+  "history": [
+    "111年5月23日三峽校區學生議會第22屆下學期第4次臨時會通過、5月25日臺北校區學生議會第5屆下學期第5次臨時會通過。",
+    "112年11月5日總會第2屆第1次總會會議通過、11月6日總會長公布（總令字第1121106001號令），修正第13、16、22、30、36、42、47、68、83條條文，並刪除第29條條文。"
+  ],
+  "fullText": "<div class=\"regulation-content\">\n\t\t國立臺北大學學生自治會受全體學生之託付，依據學生自治之精神，為保障學生權益、增進會員福祉、落實資源分配正義、完善學生自治體系，制定本章程，頒行全校，永矢咸遵。\n\t<div class=\"zhangJie\">\n\t\t<p class=\"law-chapter\">第一章 總則</p>\n\t</div>\n\t<div class=\"law-article\">\n\t\t<div class=\"jfpc\"><p class=\"law-art-num\">第1條</p></div>\n\t\t<p class=\"xiang\">國立臺北大學學生自治會（以下簡稱本會），係依「大學法」第三十三條第二項、「國立臺北大學組織規程」第三十九條設置，制定「國立臺北大學學生自治會組織章程」(以下簡稱本章程)。</p>\n\t</div>\n\t<div class=\"law-article\">\n\t\t<div class=\"jfpc\"><p class=\"law-art-num\">第85條</p></div>\n\t\t<p class=\"xiang\">本章程規定事項，有另定實施程序之必要者，以法律定之。</p>\n\t</div>\n\t<!--end single article-->\n</div> <!-- end regulation content --> \n"
+}
+```
